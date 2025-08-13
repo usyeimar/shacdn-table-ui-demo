@@ -13,7 +13,7 @@ final class TaskController extends Controller
 {
     public function index(Request $request): Response
     {
-        return Inertia::render('Tasks');
+        return Inertia::render('Tasks/Index');
     }
 
     public function create(Request $request): Response

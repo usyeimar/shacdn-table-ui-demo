@@ -76,9 +76,12 @@ final class TasksService
             ->allowedSorts([
                 'id',
                 'title',
+                'description',
                 'status',
                 'priority',
+                'assigned_to',
                 'due_date',
+                'completed_at',
                 'created_at',
                 'updated_at',
             ])

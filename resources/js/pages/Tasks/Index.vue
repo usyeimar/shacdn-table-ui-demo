@@ -20,16 +20,34 @@
         :moduleId="'tasks'"
         :enableGlobalSearch="false"
         :enableColumnVisibility="false"
-        :enableRowSelection="true"
         :enableDeletedModeToggle="true"
         :initialPageSize="25"
         :searchPlaceholder="'Buscar tareas...'"
         :customFilters="filtersConfig"
         :exportConfig="exportConfig"
         :deletedMode="deletedMode"
-        :show-bulk-actions="[
-            { label: 'Eliminar', action: 'delete', permission: 'tasks.delete' },
-            { label: 'Exportar', action: 'export', permission: 'tasks.export' }
+        :enableRowSelection="true"
+        :bulkActions="[
+            { 
+                id: 'delete',
+                label: 'Eliminar', 
+                permission: 'tasks.delete',
+                endpoint: '/api/tasks/bulk-delete',
+                method: 'DELETE',
+                confirm: true,
+                confirmMessage: '¿Estás seguro de que quieres eliminar las tareas seleccionadas?',
+                variant: 'destructive',
+                disabled: (selectedRows) => selectedRows.length === 0
+            },
+            { 
+                id: 'export',
+                label: 'Exportar', 
+                permission: 'tasks.export',
+                endpoint: '/api/tasks/bulk-export',
+                method: 'POST',
+                variant: 'outline',
+                disabled: (selectedRows) => selectedRows.length === 0
+            }
         ]"
         :show-column-visibility-toggle="true"
 
@@ -73,8 +91,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { DataTable } from '@/components/data-table';
-import TaskForm from '@/components/TaskForm.vue';
-import TaskDetail from '@/components/TaskDetail.vue';
+import TaskForm from '@/pages/Tasks/components/TaskForm.vue';
+import TaskDetail from '@/pages/Tasks/components/TaskDetail.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Plus } from 'lucide-vue-next';
 import type { FilterConfig, ExportConfig } from '@/components/data-table';

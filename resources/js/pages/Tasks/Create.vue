@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import TaskForm from '@/components/TaskForm.vue';
+import TaskForm from '@/pages/Tasks/components/TaskForm.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { router } from '@inertiajs/vue3';
 import type { BreadcrumbItemType } from '@/types';

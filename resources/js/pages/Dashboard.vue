@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import TaskForm from '@/components/TaskForm.vue';
+import TaskForm from '@/pages/Tasks/components/TaskForm.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { CheckSquare, Plus, BarChart3 } from 'lucide-vue-next';
 import axios from 'axios';

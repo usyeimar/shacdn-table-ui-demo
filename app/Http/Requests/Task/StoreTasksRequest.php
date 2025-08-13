@@ -18,7 +18,7 @@ final class StoreTasksRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|max:255|min:3',
             'description' => 'nullable|string|max:1000',
             'status' => 'sometimes|string|in:pending,in_progress,completed,cancelled',
             'priority' => 'sometimes|string|in:low,medium,high',
@@ -31,6 +31,7 @@ final class StoreTasksRequest extends FormRequest
     {
         return [
             'title.required' => 'El título es obligatorio.',
+            'title.min' => 'El título debe tener al menos 3 caracteres.',
             'title.max' => 'El título no puede tener más de 255 caracteres.',
             'description.max' => 'La descripción no puede tener más de 1000 caracteres.',
             'status.in' => 'El estado debe ser uno de: pendiente, en progreso, completado, cancelado.',
