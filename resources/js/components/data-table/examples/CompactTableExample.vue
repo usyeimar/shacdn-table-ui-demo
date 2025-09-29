@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Vue and composables
-import { ref, computed } from 'vue';
+import { ref, computed, h } from 'vue';
 
 // Types
 import type { ColumnDef } from '@tanstack/vue-table';
@@ -250,12 +250,10 @@ const taskColumns: ColumnDef<Task>[] = [
     {
         accessorKey: 'title',
         header: 'Título',
-        cell: ({ row }) => (
-            <div class="max-w-xs">
-                <div class="font-medium truncate">{row.original.title}</div>
-                <div class="text-xs text-muted-foreground truncate">{row.original.description}</div>
-            </div>
-        ),
+        cell: ({ row }) => h('div', { class: 'max-w-xs' }, [
+            h('div', { class: 'font-medium truncate' }, row.original.title),
+            h('div', { class: 'text-xs text-muted-foreground truncate' }, row.original.description)
+        ]),
         size: 250
     },
     {
@@ -264,10 +262,10 @@ const taskColumns: ColumnDef<Task>[] = [
         cell: ({ row }) => {
             const status = row.original.status;
             const variants = {
-                pending: 'secondary',
-                in_progress: 'default',
-                completed: 'success',
-                cancelled: 'destructive'
+                pending: 'secondary' as const,
+                in_progress: 'default' as const,
+                completed: 'secondary' as const,
+                cancelled: 'destructive' as const
             };
             const labels = {
                 pending: 'Pendiente',
@@ -285,9 +283,9 @@ const taskColumns: ColumnDef<Task>[] = [
         cell: ({ row }) => {
             const priority = row.original.priority;
             const variants = {
-                low: 'secondary',
-                medium: 'default',
-                high: 'destructive'
+                low: 'secondary' as const,
+                medium: 'default' as const,
+                high: 'destructive' as const
             };
             const labels = {
                 low: 'Baja',
@@ -301,23 +299,19 @@ const taskColumns: ColumnDef<Task>[] = [
     {
         accessorKey: 'assigned_to',
         header: 'Asignado a',
-        cell: ({ row }) => (
-            <div class="flex items-center gap-2">
-                <User class="h-4 w-4 text-muted-foreground" />
-                <span>{row.original.assigned_to}</span>
-            </div>
-        ),
+        cell: ({ row }) => h('div', { class: 'flex items-center gap-2' }, [
+            h(User, { class: 'h-4 w-4 text-muted-foreground' }),
+            h('span', {}, row.original.assigned_to)
+        ]),
         size: 150
     },
     {
         accessorKey: 'due_date',
         header: 'Fecha de vencimiento',
-        cell: ({ row }) => (
-            <div class="flex items-center gap-2">
-                <Calendar class="h-4 w-4 text-muted-foreground" />
-                {h(DateDisplayCell, { value: row.original.due_date })}
-            </div>
-        ),
+        cell: ({ row }) => h('div', { class: 'flex items-center gap-2' }, [
+            h(Calendar, { class: 'h-4 w-4 text-muted-foreground' }),
+            h(DateDisplayCell, { value: row.original.due_date })
+        ]),
         size: 150
     },
     {
@@ -417,8 +411,6 @@ const showDeletedModeToggle = ref(true);
             :showPagination="showPagination"
             :showBulkActions="showBulkActions"
             :enableRowSelection="true"
-            :enableGlobalSearch="showToolbar"
-            :enableColumnVisibility="showToolbar"
             :initialPageSize="10"
             :exportConfig="showExport ? exportConfig : undefined"
             :customFilters="filtersConfig"

@@ -5,7 +5,9 @@ El componente DataTable es una tabla de datos avanzada y flexible que proporcion
 ## 📋 Tabla de Contenidos
 
 - [✨ Características Principales](#-características-principales)
-- [🚀 Instalación](#-instalación)
+- [📋 Requisitos Previos](#-requisitos-previos)
+- [🎨 Componentes shadcn/ui Requeridos](#-componentes-shadcnui-requeridos)
+- [� Instalación](#-instalación)
 - [🧩 Componentes](#-componentes)
 - [💡 Uso Básico](#-uso-básico)
 - [⚙️ Configuración Avanzada](#️-configuración-avanzada)
@@ -48,10 +50,184 @@ El componente DataTable es una tabla de datos avanzada y flexible que proporcion
 - 🔒 Control de permisos granular
 - 🗑️ **Modo de eliminación con restauración**
 
+## 🎨 Componentes shadcn/ui Requeridos
+
+Esta tabla de datos requiere los siguientes componentes de shadcn/ui para Vue para funcionar correctamente.
+
+### 📋 Lista de Componentes Requeridos
+
+#### 🎯 Componentes Core (Obligatorios)
+
+| Componente | Ubicación | Uso en DataTable |
+|------------|-----------|------------------|
+| **Table** | `@/components/ui/table` | Estructura principal de la tabla |
+| **TableBody** | `@/components/ui/table` | Contenedor del cuerpo de la tabla |
+| **TableCell** | `@/components/ui/table` | Celdas individuales |
+| **TableHead** | `@/components/ui/table` | Encabezados de columnas |
+| **TableHeader** | `@/components/ui/table` | Contenedor de encabezados |
+| **TableRow** | `@/components/ui/table` | Filas de la tabla |
+| **Button** | `@/components/ui/button` | Botones de acciones y toolbar |
+| **Checkbox** | `@/components/ui/checkbox` | Selección de filas |
+| **Skeleton** | `@/components/ui/skeleton` | Estados de carga |
+
+#### 🎨 Componentes de UI (Obligatorios)
+
+| Componente | Ubicación | Uso en DataTable |
+|------------|-----------|------------------|
+| **DropdownMenu** | `@/components/ui/dropdown-menu` | Menús de acciones por fila |
+| **DropdownMenuContent** | `@/components/ui/dropdown-menu` | Contenido del menú |
+| **DropdownMenuItem** | `@/components/ui/dropdown-menu` | Elementos del menú |
+| **DropdownMenuSeparator** | `@/components/ui/dropdown-menu` | Separadores del menú |
+| **DropdownMenuTrigger** | `@/components/ui/dropdown-menu` | Trigger del menú |
+| **Sheet** | `@/components/ui/sheet` | Panel lateral para previews |
+
+#### 🎯 Componentes de Funcionalidad (Obligatorios)
+
+| Componente | Ubicación | Uso en DataTable |
+|------------|-----------|------------------|
+| **Dialog** | `@/components/ui/dialog` | Diálogos de exportación |
+| **DialogContent** | `@/components/ui/dialog` | Contenido del diálogo |
+| **DialogFooter** | `@/components/ui/dialog` | Pie del diálogo |
+| **DialogHeader** | `@/components/ui/dialog` | Encabezado del diálogo |
+| **DialogTitle** | `@/components/ui/dialog` | Título del diálogo |
+| **Select** | `@/components/ui/select` | Selectores de formato de exportación |
+| **SelectContent** | `@/components/ui/select` | Contenido del selector |
+| **SelectItem** | `@/components/ui/select` | Elementos del selector |
+| **SelectTrigger** | `@/components/ui/select` | Trigger del selector |
+| **SelectValue** | `@/components/ui/select` | Valor del selector |
+
+#### 🎨 Componentes Opcionales (Para ejemplos y casos de uso avanzados)
+
+| Componente | Ubicación | Uso en DataTable |
+|------------|-----------|------------------|
+| **Badge** | `@/components/ui/badge` | Etiquetas de estado y prioridad |
+| **Card** | `@/components/ui/card` | Contenedores en ejemplos |
+| **CardContent** | `@/components/ui/card` | Contenido de tarjetas |
+| **CardDescription** | `@/components/ui/card` | Descripción de tarjetas |
+| **CardHeader** | `@/components/ui/card` | Encabezado de tarjetas |
+| **CardTitle** | `@/components/ui/card` | Título de tarjetas |
+| **Avatar** | `@/components/ui/avatar` | Avatares de usuarios |
+| **AvatarFallback** | `@/components/ui/avatar` | Fallback de avatares |
+| **AvatarImage** | `@/components/ui/avatar` | Imagen de avatares |
+| **Tooltip** | `@/components/ui/tooltip` | Tooltips informativos |
+| **TooltipContent** | `@/components/ui/tooltip` | Contenido de tooltips |
+| **TooltipProvider** | `@/components/ui/tooltip` | Proveedor de tooltips |
+| **TooltipTrigger** | `@/components/ui/tooltip` | Trigger de tooltips |
+
+###  Comandos de Instalación
+
+#### Instalación Básica (Componentes Obligatorios)
+
+```bash
+# Componentes core de tabla
+npx shadcn-vue@latest add table
+npx shadcn-vue@latest add button
+npx shadcn-vue@latest add checkbox
+npx shadcn-vue@latest add skeleton
+
+# Componentes de UI
+npx shadcn-vue@latest add dropdown-menu
+npx shadcn-vue@latest add sheet
+
+# Componentes de funcionalidad
+npx shadcn-vue@latest add dialog
+npx shadcn-vue@latest add select
+```
+
+#### Instalación Completa (Incluye Opcionales)
+
+```bash
+# Ejecutar todos los comandos de arriba, más:
+npx shadcn-vue@latest add badge
+npx shadcn-vue@latest add card
+npx shadcn-vue@latest add avatar
+npx shadcn-vue@latest add tooltip
+```
+
+### 🔧 Configuración Requerida
+
+#### 1. Configurar shadcn/ui para Vue
+
+Asegúrate de tener configurado shadcn/ui para Vue en tu proyecto:
+
+```bash
+npx shadcn-vue@latest init
+```
+
+#### 2. Configurar Tailwind CSS
+
+Los componentes requieren Tailwind CSS configurado:
+
+```bash
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+#### 3. Configurar el archivo de configuración
+
+Asegúrate de que tu `components.json` tenga la configuración correcta:
+
+```json
+{
+  "style": "default",
+  "rsc": false,
+  "tsx": false,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "src/assets/index.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}
+```
+
+### ✅ Verificación de Instalación
+
+Para verificar que todos los componentes están instalados correctamente, ejecuta:
+
+```bash
+# Verificar que los archivos existen
+ls -la src/components/ui/
+
+# Deberías ver archivos como:
+# - table.vue
+# - button.vue
+# - checkbox.vue
+# - dropdown-menu.vue
+# - dialog.vue
+# - select.vue
+# - sheet.vue
+# - skeleton.vue
+```
+
+### 🎯 Uso Mínimo
+
+Para usar la tabla con la configuración mínima, solo necesitas:
+
+1. **Table components** (table, table-body, table-cell, table-head, table-header, table-row)
+2. **Button** (para acciones)
+3. **Checkbox** (para selección de filas)
+4. **Skeleton** (para estados de carga)
+
+Los demás componentes se pueden instalar según las funcionalidades que necesites usar.
+
+### 🚨 Notas Importantes
+
+- **Vue 3**: Asegúrate de usar Vue 3 con Composition API
+- **TypeScript**: Los componentes están tipados para TypeScript
+- **Tailwind**: Requiere Tailwind CSS para los estilos
+- **Lucide Icons**: Se usan iconos de Lucide Vue Next
+- **Vue Sonner**: Para notificaciones toast (opcional)
+
 ## 🚀 Instalación
 
 ```bash
-# 📦 Instalar dependencias principales
+# � Instalar dependencias principales
 npm install @tanstack/vue-table @tanstack/vue-query axios
 
 # 🎨 Instalar dependencias opcionales
@@ -120,8 +296,6 @@ const taskColumns = [
     :columns="columns"
     :moduleId="moduleId"
     :initialPageSize="15"
-    :enableGlobalSearch="true"
-    :enableColumnVisibility="true"
     :enableRowSelection="true"
     :rowActions="rowActions"
     :bulkActions="bulkActions"
@@ -129,8 +303,6 @@ const taskColumns = [
     :exportConfig="exportConfig"
     :deletedMode="deletedMode"
     :enableDeletedModeToggle="true"
-    @row-selected="handleRowSelected"
-    @bulk-action="handleBulkAction"
   />
 </template>
 ```
@@ -378,8 +550,6 @@ const columns = [
     :exportConfig="exportConfig"
     :customFilters="filtersConfig"
     :rowActions="rowActions"
-    :enableGlobalSearch="true"
-    :enableColumnVisibility="true"
     :enableRowSelection="true"
     :initialPageSize="10"
     searchPlaceholder="Buscar tareas..."
@@ -609,18 +779,20 @@ Puedes ocultar elementos opcionales para crear tablas más limpias:
 | `endpoint` | string | ✅ | - | 🌐 URL del endpoint para obtener datos |
 | `columns` | ColumnDef[] | ✅ | - | 📊 Definición de columnas |
 | `moduleId` | string | ✅ | - | 🏷️ Identificador único del módulo |
+| `transformFn` | (json) => `{ data, meta }` | ❌ | - | 🔧 Transforma la respuesta API a `{ data: TData[], meta }` |
 | `initialPageSize` | number | ❌ | 15 | 📏 Tamaño inicial de página |
-| `enableGlobalSearch` | boolean | ❌ | false | 🔍 Habilita búsqueda global |
-| `enableColumnVisibility` | boolean | ❌ | false | 👁️ Habilita control de visibilidad |
+| `searchPlaceholder` | string | ❌ | 'Buscar...' | 🔤 Placeholder para búsqueda global en filtros |
 | `enableRowSelection` | boolean | ❌ | true | ✅ Habilita selección de filas |
 | `rowActions` | RowAction[] | ❌ | [] | ⚡ Acciones por fila |
 | `deletedRowActions` | RowAction[] | ❌ | [] | 🗑️ Acciones para elementos eliminados |
 | `defaultRowActionsConfig` | DefaultRowActionsConfig | ❌ | {} | ⚙️ Configuración de acciones por defecto |
-| `bulkActions` | BulkAction[] | ❌ | [] | 🎯 Acciones masivas |
+| `bulkActions` | BulkAction[] | ❌ | [] | 🎯 Acciones masivas (se ejecutan internamente) |
 | `customFilters` | FilterConfig[] | ❌ | [] | 🔍 Filtros personalizados |
+| `initialFilters` | Record<string,string> | ❌ | `{}` | 🏷️ Filtros iniciales aplicados |
 | `exportConfig` | ExportConfig | ❌ | undefined | 📥 Configuración de exportación |
 | `deletedMode` | boolean | ❌ | false | 🗑️ Modo de elementos eliminados |
 | `enableDeletedModeToggle` | boolean | ❌ | false | 🔄 Habilita toggle de modo eliminación |
+| `class` | string | ❌ | '' | 🎨 Clases adicionales para el contenedor |
 | `density` | 'compact' \| 'normal' \| 'comfortable' | ❌ | 'normal' | 🎛️ Control de densidad de la tabla |
 | `rowHeight` | 'sm' \| 'md' \| 'lg' | ❌ | 'md' | 📐 Altura de las filas |
 | `compactMode` | boolean | ❌ | false | 🎯 Modo compacto para máximo ahorro de espacio |
@@ -634,10 +806,36 @@ Puedes ocultar elementos opcionales para crear tablas más limpias:
 |-------|---------|-------------|
 | `update:appliedFilters` | `Record<string, string>` | 🔍 Filtros aplicados actualizados |
 | `clear-all-filters` | - | 🧹 Todos los filtros limpiados |
-| `export` | `ExportFormat` | 📥 Exportación iniciada |
+| `export` | `ExportFormat` | 📥 Apertura del diálogo de exportación |
 | `update:deletedMode` | `boolean` | 🗑️ Modo de eliminación actualizado |
-| `row-selected` | `Row<TData>[]` | ✅ Filas seleccionadas |
-| `bulk-action` | `{ action: BulkAction, rows: Row<TData>[] }` | 🎯 Acción masiva ejecutada |
+
+Nota: Las acciones masivas y la selección de filas se gestionan de forma interna por el componente (no se emiten eventos).
+
+### 🌐 Forma esperada de la API y parámetros de consulta
+
+La tabla realiza peticiones GET a `endpoint` con paginación, filtros y ordenación manuales. Parámetros enviados:
+
+- `page[number]`: número de página (1-indexed)
+- `page[size]`: tamaño de página
+- `filter[clave]`: filtros personalizados aplicados
+- `sort`: cadena con columnas ordenadas, p.ej. `title,-created_at`
+- `filter[trashed]=only`: cuando `deletedMode` está activo
+
+El componente espera por defecto una respuesta con formato estilo Laravel JSON:API paginado:
+
+```json
+{
+  "data": [ { /* fila */ } ],
+  "meta": {
+    "current_page": 1,
+    "last_page": 10,
+    "total": 100,
+    "per_page": 10
+  }
+}
+```
+
+Si tu API difiere, usa la prop `transformFn(json)` para transformar a `{ data: TData[], meta }`.
 
 ## 🎨 Ejemplos Prácticos
 
@@ -719,8 +917,6 @@ const taskColumns = [
     :endpoint="'/api/tasks'"
     :columns="taskColumns"
     :moduleId="'tasks'"
-    :enableGlobalSearch="true"
-    :enableColumnVisibility="true"
     :enableRowSelection="true"
     :initialPageSize="10"
     searchPlaceholder="Buscar tareas..."
@@ -973,8 +1169,6 @@ const columns = [
     :bulkActions="bulkActions"
     :deletedMode="deletedMode"
     :enableDeletedModeToggle="true"
-    :enableGlobalSearch="true"
-    :enableColumnVisibility="true"
     :enableRowSelection="true"
     :initialPageSize="10"
     :density="'normal'"
@@ -1015,6 +1209,7 @@ const columns = [
 - 🎯 Agrupa filtros en 'basic' y 'advanced' para mejor UX
 - 📝 Proporciona placeholders descriptivos
 - 🔄 Usa tipos de filtro apropiados (text, select, multiselect, date, date-range)
+ - 🔎 La UI de búsqueda/filtrado la provee `DataTableFilters` dentro de `DataTableToolbar`.
 
 ## 🔧 Solución de Problemas
 
@@ -1026,7 +1221,6 @@ const columns = [
 ### 2. Filtros no Funcionales
 - 🔎 Asegúrate de que las columnas sean `filterable: true`
 - 🎯 Verifica que los filtros personalizados estén correctamente implementados
-- 🔎 Si el filtro global no funciona, revisa la configuración de `enableGlobalSearch`
 
 ### 3. Exportación de Datos
 - 📥 Asegúrate de que el `exportConfig` esté correctamente configurado

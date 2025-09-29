@@ -14,45 +14,23 @@
         </Button>
       </div>
 
-      <DataTable
-        :endpoint="'/api/tasks'"
-        :columns="taskColumns"
-        :moduleId="'tasks'"
-        :enableGlobalSearch="false"
-        :enableColumnVisibility="false"
-        :enableDeletedModeToggle="true"
-        :initialPageSize="25"
-        :searchPlaceholder="'Buscar tareas...'"
-        :customFilters="filtersConfig"
-        :exportConfig="exportConfig"
-        :deletedMode="deletedMode"
-        :enableRowSelection="true"
-        :bulkActions="[
-            { 
-                id: 'delete',
-                label: 'Eliminar', 
-                permission: 'tasks.delete',
-                endpoint: '/api/tasks/bulk-delete',
-                method: 'DELETE',
-                confirm: true,
-                confirmMessage: '¿Estás seguro de que quieres eliminar las tareas seleccionadas?',
-                variant: 'destructive',
-                disabled: (selectedRows) => selectedRows.length === 0
-            },
-            { 
-                id: 'export',
-                label: 'Exportar', 
-                permission: 'tasks.export',
-                endpoint: '/api/tasks/bulk-export',
-                method: 'POST',
-                variant: 'outline',
-                disabled: (selectedRows) => selectedRows.length === 0
-            }
-        ]"
-        :show-column-visibility-toggle="true"
-
-        @update:deletedMode="deletedMode = $event"
-      />
+      <DataTable :endpoint="'/api/tasks'" :columns="taskColumns" :moduleId="'tasks'" :enableGlobalSearch="true"
+        :enableColumnVisibility="true" :enableDeletedModeToggle="true" :initialPageSize="10"
+        :searchPlaceholder="'Buscar tareas...'" :customFilters="filtersConfig" :exportConfig="exportConfig"
+        :deletedMode="deletedMode" :enableRowSelection="true" :bulkActions="bulkActionsConfig"
+        :rowActions="customRowActions" :defaultRowActionsConfig="defaultRowActionsConfig" :transformFn="transformTasks"
+        @update:deletedMode="deletedMode = $event">
+        <template #empty-state>
+          <div class="flex flex-col items-center justify-center py-8">
+            <Settings2 class="text-muted-foreground mb-2 h-12 w-12" />
+            <p class="text-muted-foreground">No se encontraron tareas</p>
+            <Button variant="link" class="mt-2" @click="showCreateTaskModal = true">
+              <Plus class="mr-2 h-4 w-4" />
+              Crear nueva tarea
+            </Button>
+          </div>
+        </template>
+      </DataTable>
     </div>
 
     <!-- Create Task Modal -->
@@ -72,13 +50,8 @@
           <SheetTitle>Detalle de Tarea</SheetTitle>
         </SheetHeader>
         <div class="mt-6">
-          <TaskDetail
-            v-if="selectedTask"
-            :task="selectedTask"
-            @edit="handleEdit"
-            @deleted="handleTaskDeleted"
-            @updated="handleTaskUpdated"
-          />
+          <TaskDetail v-if="selectedTask" :task="selectedTask" @edit="handleEdit" @deleted="handleTaskDeleted"
+            @updated="handleTaskUpdated" />
         </div>
       </SheetContent>
     </Sheet>
@@ -86,16 +59,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h } from 'vue';
+import { ref, reactive, h, computed } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { DataTable } from '@/components/data-table';
+import { DataTable, DataTableRowActions, DateDisplayCell, MainDataCell } from '@/components/data-table';
+import { Checkbox } from '@/components/ui/checkbox';
 import TaskForm from '@/pages/Tasks/components/TaskForm.vue';
 import TaskDetail from '@/pages/Tasks/components/TaskDetail.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Plus } from 'lucide-vue-next';
-import type { FilterConfig, ExportConfig } from '@/components/data-table';
+import { Plus, Trash2Icon, PlusCircleIcon, Settings2 } from 'lucide-vue-next';
+import axios from 'axios';
+import { toast } from 'vue-sonner';
+import type { FilterConfig, ExportConfig, PaginationMeta, BulkAction, DefaultRowActionsConfig, RowAction } from '@/components/data-table';
 import type { ColumnDef } from '@tanstack/vue-table';
 import type { BreadcrumbItemType } from '@/types';
 
@@ -117,6 +93,11 @@ interface Task {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  mainData?: {
+    name: string;
+    display_name?: string;
+    subtext?: string;
+  };
 }
 
 // State
@@ -139,6 +120,24 @@ const breadcrumbs: BreadcrumbItemType[] = [
 
 // Configuración de columnas para la tabla de tareas
 const taskColumns: ColumnDef<Task>[] = [
+
+  {
+    accessorKey: 'mainData',
+    header: '',
+    cell: ({ row }: { row: any }) => {
+      const data = row.original as Task;
+      const name = data.mainData?.display_name || data.title || 'N/A';
+      const subtext = data.description || (data.assigned_user?.name ? `Asignado a: ${data.assigned_user.name}` : 'Sin asignar');
+      return h(MainDataCell, {
+        name,
+        subtext,
+        badges: data.priority ? [{ text: data.priority, variant: data.priority === 'high' ? 'destructive' : data.priority === 'medium' ? 'default' : 'secondary' }] : []
+      });
+    },
+    size: 300,
+    enableSorting: false,
+    enableHiding: false
+  },
   {
     accessorKey: 'title',
     header: 'Título',
@@ -205,20 +204,35 @@ const taskColumns: ColumnDef<Task>[] = [
   {
     accessorKey: 'due_date',
     header: 'Fecha de Vencimiento',
-    cell: ({ row }: { row: any }) => {
-      const task = row.original as Task;
-      if (!task.due_date) {
-        return h('div', { class: 'text-muted-foreground' }, 'Sin fecha');
-      }
-
-      const dueDate = new Date(task.due_date);
-      const today = new Date();
-      const isOverdue = dueDate < today && task.status !== 'completed';
-
-      return h('div', {
-        class: isOverdue ? 'text-destructive font-medium' : 'text-foreground'
-      }, new Date(task.due_date).toLocaleDateString('es-ES'));
-    }
+    cell: ({ getValue, row }: any) => {
+      const val = getValue() as string | undefined;
+      if (!val) return h('div', { class: 'text-muted-foreground' }, 'Sin fecha');
+      return h(DateDisplayCell, { value: val, formatStr: 'dd MMM, yyyy' });
+    },
+    size: 150
+  },
+  {
+    accessorKey: 'created_at',
+    header: 'Creado',
+    cell: ({ getValue }: any) => {
+      const val = getValue() as string;
+      return h(DateDisplayCell, { value: val, formatStr: 'dd MMM, yyyy' });
+    },
+    size: 150
+  },
+  {
+    id: 'actions',
+    header: () => h('div', { class: 'text-right' }, 'Acciones'),
+    cell: ({ row, table }: any) =>
+      h(DataTableRowActions as any, {
+        row,
+        table,
+        customActions: customRowActions,
+        defaultActionsConfig: defaultRowActionsConfig,
+        isDeletedMode: deletedMode.value
+      }),
+    size: 80,
+    enableResizing: false
   }
 ];
 
@@ -278,25 +292,95 @@ const filtersConfig: FilterConfig[] = [
   }
 ];
 
-// Configuración de exportación
-const exportConfig: ExportConfig = {
-  formats: ['csv', 'xlsx', 'pdf', 'json'],
+// Configuración de exportación (descarga como Blob)
+const exportConfig = computed<ExportConfig>(() => ({
+  formats: ['csv', 'xlsx'],
   endpoint: '/api/tasks/export',
-  filename: 'tasks-report',
-  enabled: true,
-  permission: 'tasks.export',
-  showSelectedOnly: true,
-  customHeaders: {
-    'X-Export-Type': 'tasks',
-    'X-User-Id': 'current-user-id'
-  },
-  customParams: {
-    includeMetadata: true,
-    includeFilters: true
-  },
+  filename: `tasks-export-${new Date().toISOString().split('T')[0]}`,
   onExport: async (format) => {
-    console.log(`Exporting tasks in ${format} format`);
+    try {
+      const response = await axios.get('/api/tasks/export', {
+        params: { format, ...(deletedMode.value ? { trashed: true } : {}) },
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${exportConfig.value.filename}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Exportación completada');
+    } catch (error) {
+      console.error('Error exporting tasks:', error);
+      toast.error('Error al exportar las tareas');
+      throw error as any;
+    }
   }
+}));
+
+// Acciones masivas
+const bulkActionsConfig = computed<BulkAction<Task>[]>(() => {
+  if (deletedMode.value) {
+    return [
+      {
+        id: 'bulk-restore',
+        label: 'Restaurar Seleccionadas',
+        icon: PlusCircleIcon,
+        endpoint: '/api/tasks/bulk-restore',
+        method: 'POST',
+        permission: 'tasks.restore',
+        confirm: true,
+        confirmMessage: '¿Seguro que quieres restaurar las tareas seleccionadas?',
+        uiBehavior: 'notifyRefresh',
+        disabled: (selectedRows) => selectedRows.length === 0,
+        variant: 'secondary'
+      }
+    ];
+  }
+  return [
+    {
+      id: 'bulk-delete',
+      label: 'Eliminar Seleccionadas',
+      icon: Trash2Icon,
+      endpoint: '/api/tasks/bulk-delete',
+      method: 'DELETE',
+      permission: 'tasks.delete',
+      confirm: true,
+      confirmMessage: '¿Seguro que quieres eliminar las tareas seleccionadas?',
+      uiBehavior: 'notifyRefresh',
+      disabled: (selectedRows) => selectedRows.length === 0,
+      variant: 'destructive'
+    }
+  ];
+});
+
+// Acciones por fila
+const customRowActions = ref<RowAction<Task>[]>([]);
+const defaultRowActionsConfig: DefaultRowActionsConfig<Task> = {
+  normalMode: {
+    delete: {
+      permission: 'tasks.delete',
+      enabled: true,
+    },
+  },
+  deleteRoute: (row) => `/api/tasks/${row.id}`,
+};
+
+// Transformación de respuesta API
+const transformTasks = (jsonData: { data: Task[]; meta: PaginationMeta }): { data: Task[]; meta: PaginationMeta } => {
+  const data = (jsonData.data || []).map((item) => ({
+    ...item,
+    mainData: {
+      name: item.title,
+      display_name: item.title,
+      subtext: item.description || (item.assigned_user?.name ? `Asignado a: ${item.assigned_user.name}` : 'Sin asignar'),
+    },
+  }));
+  return { data, meta: jsonData.meta };
 };
 
 // Methods

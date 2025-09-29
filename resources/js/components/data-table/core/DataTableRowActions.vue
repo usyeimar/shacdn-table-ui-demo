@@ -22,7 +22,6 @@ interface DataTableRowActionsProps {
 
 const props = defineProps<DataTableRowActionsProps>();
 
-const { hasPermissionTo } = usePermissions();
 
 const activeCustomActions = computed(() => {
     if (props.isDeletedMode) {
@@ -165,7 +164,9 @@ const allVisibleActions = computed(() => {
             const isDisabled = action.disabled?.(props.row.original);
             const hasPerm = action.hasAccess
                 ? action.hasAccess(props.row.original)
-                : (!action.permission || hasPermissionTo(action.permission));
+                : (!action.permission)
+
+
             if (isDisabled) return false;
             return hasPerm;
         })
@@ -182,7 +183,7 @@ const handleHttpAction = async (action: RowAction<TData>) => {
     }
 
     if (action.confirm) {
-        const isConfirmed = await useConfirmationDialog().show({
+        const isConfirmed = await useConfirmationDialog().openDialog({
             title: action.confirmMessage || 'Confirmar acción',
             message: '¿Estás seguro de que quieres continuar?',
         });
@@ -203,7 +204,7 @@ const handleHttpAction = async (action: RowAction<TData>) => {
             toast.success(action.label + ' exitoso.');
         }
         if (action.uiBehavior === 'refresh' || action.uiBehavior === 'notifyRefresh') {
-            props.table.options.meta?.refreshData?.();
+            (props.table.options.meta as any)?.refreshData?.();
         }
     } catch (error: any) {
         const errorMessage = error.response?.data?.message || error.message || 'Acción fallida';
@@ -224,10 +225,10 @@ const executeAction = async (action: RowAction<TData>) => {
         const routeParams = action.routeParams ? action.routeParams(rowData) : rowData.id;
         router.visit(route(action.routeName, routeParams as any)); // route() es de Ziggy/Inertia
     } else if (action.actionKind === 'event' && action.eventName) {
-        props.table.options.meta?.customActionHandler?.(action.eventName, rowData);
+        (props.table.options.meta as any)?.customActionHandler?.(action.eventName, rowData);
     } else if (action.actionKind === 'function' && action.actionFn) {
         if (action.confirm) {
-            const isConfirmed = await useConfirmationDialog().show({
+            const isConfirmed = await useConfirmationDialog().openDialog({
                 title: action.confirmMessage || 'Confirmar acción',
                 message: '¿Estás seguro de que quieres continuar?',
             });

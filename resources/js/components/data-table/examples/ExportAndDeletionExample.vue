@@ -609,8 +609,6 @@ const stats = computed(() => ({
                     :bulkActions="bulkActions"
                     :deletedMode="deletedMode"
                     :enableDeletedModeToggle="true"
-                    :enableGlobalSearch="true"
-                    :enableColumnVisibility="true"
                     :enableRowSelection="true"
                     :initialPageSize="10"
                     :density="'normal'"

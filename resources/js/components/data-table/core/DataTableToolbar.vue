@@ -17,9 +17,7 @@ import type { ExportFormat, FilterConfig, Identifiable } from '../index';
 
 interface DataTableToolbarProps {
     table: Table<TData>;
-    globalFilter: string;
     searchPlaceholder?: string;
-    enableColumnVisibility?: boolean;
     customFilters?: FilterConfig[];
     appliedFilters: Record<string, string>;
     exportConfig?: {
@@ -40,11 +38,10 @@ const localAppliedFilters = computed({
 });
 
 const isAnyFilterActive = computed(() => {
-    return props.globalFilter || Object.values(props.appliedFilters).some(val => val && val !== '');
+    return Object.values(props.appliedFilters).some(val => val && val !== '');
 });
 
 const emit = defineEmits<{
-    (e: 'update:globalFilter', value: string): void;
     (e: 'update:appliedFilters', value: Record<string, string>): void;
     (e: 'clear-all-filters'): void;
     (e: 'export'): void;
@@ -57,9 +54,6 @@ const clearAllFiltersAndSearch = () => {
     emit('clear-all-filters');
 };
 
-const hideableColumns = computed(() =>
-    props.table.getAllColumns().filter((column) => typeof column.accessorFn !== 'undefined' && column.getCanHide()),
-);
 </script>
 
 <template>
@@ -74,55 +68,37 @@ const hideableColumns = computed(() =>
             </div>
 
             <div class="flex items-center gap-2">
-                <div v-if="props.enableColumnVisibility">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="outline" size="sm" class="h-9">
-                                <SlidersHorizontalIcon class="mr-2 h-4 w-4" />
-                                Columnas
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-[180px]">
-                            <DropdownMenuLabel>Alternar Columnas</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuCheckboxItem
-                                v-for="column in hideableColumns"
-                                :key="column.id"
-                                class="capitalize"
-                                :checked="column.getIsVisible()"
-                                @update:checked="(value: boolean) => column.toggleVisibility(!!value)"
-                            >
-                                {{ column.id }}
-                            </DropdownMenuCheckboxItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
             </div>
         </div>
 
-        <div class="flex items-center justify-between">
-            <DataTableFilters
-                v-if="props.customFilters && props.customFilters.length > 0"
-                v-model="localAppliedFilters"
-                :filters="props.customFilters"
-                @clear="() => emit('update:appliedFilters', {})"
-                :searchPlaceholder="props.searchPlaceholder"
-            />
-            <Button v-if="props.exportConfig" variant="outline" size="sm" class="h-9" @click="emit('export')">
-                <Download class="mr-2 h-4 w-4" />
-                Exportar
-            </Button>
+        <div class="flex items-start justify-between flex-wrap gap-2">
+            <div class="flex-1 min-w-0 w-full lg:w-auto">
+                <DataTableFilters
+                    v-if="props.customFilters && props.customFilters.length > 0"
+                    v-model="localAppliedFilters"
+                    :filters="props.customFilters"
+                    @clear="() => emit('update:appliedFilters', {})"
+                    :searchPlaceholder="props.searchPlaceholder"
+                />
+            </div>
 
-            <Button
-                v-if="props.enableDeletedModeToggle"
-                :variant="props.deletedMode ? 'success' : 'destructive'"
-                size="sm"
-                class="h-9"
-                @click="emit('toggle-deleted-mode')"
-            >
-                <component :is="props.deletedMode ? ArrowLeft : Trash2" class="mr-2 h-4 w-4" />
-                {{ props.deletedMode ? 'Volver' : 'Ir a la papelera' }}
-            </Button>
+            <div class="flex items-center gap-2 ml-auto self-start">
+                <Button v-if="props.exportConfig" variant="outline" size="sm" class="h-9" @click="emit('export')">
+                    <Download class="mr-2 h-4 w-4" />
+                    Exportar
+                </Button>
+
+                <Button
+                    v-if="props.enableDeletedModeToggle"
+                    :variant="props.deletedMode ? 'secondary' : 'destructive'"
+                    size="sm"
+                    class="h-9"
+                    @click="emit('toggle-deleted-mode')"
+                >
+                    <component :is="props.deletedMode ? ArrowLeft : Trash2" class="mr-2 h-4 w-4" />
+                    {{ props.deletedMode ? 'Volver' : 'Ir a la papelera' }}
+                </Button>
+            </div>
         </div>
     </div>
 </template>

@@ -51,9 +51,7 @@ export interface TableProps<TData extends Identifiable, TApiResponse> {
     transformFn?: TransformFn<TApiResponse, TData>;
     moduleId: string;
     initialPageSize?: number;
-    enableGlobalSearch?: boolean;
     searchPlaceholder?: string;
-    enableColumnVisibility?: boolean;
     enableRowSelection?: boolean;
     rowActions?: RowAction<TData>[];
     deletedRowActions?: RowAction<TData>[];
@@ -76,7 +74,6 @@ export interface TableProps<TData extends Identifiable, TApiResponse> {
     showExportButton?: boolean;
     showDeletedModeToggle?: boolean;
     showFiltersToggle?: boolean;
-    showColumnVisibilityToggle?: boolean;
     showGlobalSearch?: boolean;
     showBulkActionsToggle?: boolean;
 }
@@ -234,7 +231,6 @@ export interface ToolbarConfig {
     showSearch?: boolean;
     showFilters?: boolean;
     showExport?: boolean;
-    showColumnVisibility?: boolean;
     showDensityToggle?: boolean;
     showDeletedModeToggle?: boolean;
     showBulkActions?: boolean;

@@ -51,17 +51,9 @@ const props = withDefaults(defineProps<TableProps<TData, TApiResponse>>(), {
      */
     initialPageSize: 15,
     /**
-     * @description Whether to enable global search.
-     */
-    enableGlobalSearch: false,
-    /**
      * @description The placeholder for the global search input.
      */
     searchPlaceholder: 'Buscar...',
-    /**
-     * @description Whether to enable column visibility.
-     */
-    enableColumnVisibility: false,
     /**
      * @description Whether to enable row selection.
      */
@@ -134,30 +126,39 @@ watch(
 
 const tableColumns = computed<ColumnDef<TData, any>[]>(() => {
     let allColumns = [...props.columns];
-    
+
     // Agregar columna de selección si está habilitada
     if (props.enableRowSelection) {
         const selectionColumn: ColumnDef<TData, any> = {
             id: 'select',
-            header: ({ table }) => h(Checkbox, {
-                checked: table.getIsAllPageRowsSelected(),
-                onCheckedChange: (value: boolean | 'indeterminate') => table.toggleAllPageRowsSelected(!!value),
-                ariaLabel: 'Seleccionar todas las filas',
-            }),
-            cell: ({ row }) => h(Checkbox, {
-                checked: row.getIsSelected(),
-                disabled: !row.getCanSelect(),
-                onCheckedChange: (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-                ariaLabel: 'Seleccionar fila',
-            }),
+            header: ({ table }) =>
+                h(Checkbox, {
+                    modelValue:
+                        table.getIsAllPageRowsSelected() ||
+                        (table.getIsSomePageRowsSelected() && 'indeterminate'),
+                    'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+                        table.toggleAllPageRowsSelected(!!value),
+                    ariaLabel: 'Seleccionar todas las filas',
+                    class: 'translate-y-0.5'
+                }),
+            cell: ({ row }) =>
+                h(Checkbox, {
+                    modelValue: row.getIsSelected(),
+                    disabled: !row.getCanSelect(),
+                    'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+                        row.toggleSelected(!!value),
+                    ariaLabel: 'Seleccionar fila',
+                    class: 'translate-y-0.5'
+                }),
             enableSorting: false,
             enableHiding: false,
-            size: 40,
+            size: 40
         };
-        
+
         allColumns = [selectionColumn, ...allColumns];
     }
-    
+
+
     // Agregar columna de fecha de eliminación si está en modo eliminación
     if (internalDeletedMode.value) {
         const deletedAtColumn: ColumnDef<TData, any> = {
@@ -178,16 +179,14 @@ const tableColumns = computed<ColumnDef<TData, any>[]>(() => {
             allColumns = [...allColumns, deletedAtColumn];
         }
     }
-    
+
     return allColumns;
 });
 
 const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
-const globalFilter = ref('');
 const appliedFilters = ref<Record<string, string>>({ ...props.initialFilters });
 const rowSelection = ref<RowSelectionState>({});
-const columnVisibility = ref<VisibilityState>({});
 const pagination = ref<PaginationState>({
     pageIndex: 0,
     pageSize: props.initialPageSize,
@@ -203,7 +202,6 @@ const queryKey = computed(() => [
     props.endpoint,
     pagination.value.pageIndex,
     pagination.value.pageSize,
-    globalFilter.value,
     appliedFilters.value,
     sorting.value,
     internalDeletedMode.value,
@@ -225,7 +223,6 @@ const {
             },
         };
 
-        if (globalFilter.value) params.search = globalFilter.value;
         if (internalDeletedMode.value) params.filter = { trashed: 'only' };
 
         Object.entries(appliedFilters.value).forEach(([key, value]) => {
@@ -275,25 +272,17 @@ const table = useVueTable({
         get columnFilters() {
             return columnFilters.value;
         },
-        get globalFilter() {
-            return globalFilter.value;
-        },
         get pagination() {
             return pagination.value;
         },
         get rowSelection() {
             return rowSelection.value;
         },
-        get columnVisibility() {
-            return columnVisibility.value;
-        },
     },
     enableRowSelection: props.enableRowSelection,
     onSortingChange: (updater) => (sorting.value = typeof updater === 'function' ? updater(sorting.value) : updater),
-    onGlobalFilterChange: (updater) => (globalFilter.value = typeof updater === 'function' ? updater(globalFilter.value) : updater),
     onPaginationChange: (updater) => (pagination.value = typeof updater === 'function' ? updater(pagination.value) : updater),
     onRowSelectionChange: (updater) => (rowSelection.value = typeof updater === 'function' ? updater(rowSelection.value) : updater),
-    onColumnVisibilityChange: (updater) => (columnVisibility.value = typeof updater === 'function' ? updater(columnVisibility.value) : updater),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -351,7 +340,6 @@ const executeBulkAction = (action: BulkAction<TData>) => {
 };
 
 const handleClearAllFilters = () => {
-    globalFilter.value = '';
     appliedFilters.value = {};
 };
 
@@ -457,7 +445,6 @@ const handleExport = async (format: ExportFormat) => {
             ...appliedFilters.value,
         };
 
-        if (globalFilter.value) params.search = globalFilter.value;
         if (internalDeletedMode.value) params.trashed = true;
 
         if (sorting.value.length > 0) {
@@ -489,11 +476,11 @@ const handleExport = async (format: ExportFormat) => {
 
 <template>
     <div :class="containerClasses">
-        <DataTableToolbar v-if="props.showToolbar" :table="table" :globalFilter="globalFilter"
-            :searchPlaceholder="props.searchPlaceholder" :enableColumnVisibility="props.enableColumnVisibility"
+        <DataTableToolbar v-if="props.showToolbar" :table="table"
+            :searchPlaceholder="props.searchPlaceholder"
             :customFilters="props.customFilters" :appliedFilters="appliedFilters" :exportConfig="props.exportConfig"
             :enableDeletedModeToggle="props.enableDeletedModeToggle" :deletedMode="internalDeletedMode"
-            @update:globalFilter="globalFilter = $event" @update:appliedFilters="appliedFilters = $event"
+            @update:appliedFilters="appliedFilters = $event"
             @clear-all-filters="handleClearAllFilters" @export="isExportDialogOpen = true"
             @toggle-deleted-mode="toggleDeletedMode">
             <template #toolbar-actions>
@@ -586,6 +573,6 @@ const handleExport = async (format: ExportFormat) => {
 
         <ExportDialog v-if="props.exportConfig" :isOpen="isExportDialogOpen"
             @update:isOpen="isExportDialogOpen = $event" :formats="props.exportConfig.formats"
-            :onExport="props.exportConfig.onExport" />
+            :onExport="props.exportConfig.onExport || handleExport" />
     </div>
 </template>
