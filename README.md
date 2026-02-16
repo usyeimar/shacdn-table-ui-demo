@@ -167,7 +167,6 @@ DB_PASSWORD=your_password
 ```
 
 ### 3. Base de Datos
-
 ```bash
 # Ejecutar migraciones
 php artisan migrate
@@ -178,8 +177,18 @@ php artisan db:seed --class=TaskSeeder
 
 ### 4. Configurar Permisos
 
+# Crear migrations y arvhico de configuración
 ```bash
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+```
+
+# Crear las tablas
+```bash
+php artisan migrate
+```
+
 # Crear permisos básicos
+```bash
 php artisan permission:create-permission tasks.read
 php artisan permission:create-permission tasks.create
 php artisan permission:create-permission tasks.update
